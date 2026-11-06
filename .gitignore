@@ -1,5 +1,9 @@
 runs/
 data/
+report/
+configs/
+figures/
+tables/
 chest_xray/
 __pycache__/
 *.pt
