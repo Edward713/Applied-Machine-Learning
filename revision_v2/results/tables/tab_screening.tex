@@ -1,0 +1,24 @@
+\begin{tabular}{llrrrrr}
+\toprule
+Question & Configuration & AUC & AP & Sens. & Spec. & Bal.\ acc. \\
+\midrule
+Q0 reference & Original configuration, patient-grouped split & 0.999 & 1.000 & 0.952 & 1.000 & 0.976 \\
+ & Original configuration, image-level split (previous submission) & 0.999 & 1.000 & 0.986 & 0.993 & 0.989 \\
+\midrule
+Q1 architecture & DenseNet121, no frozen phase & 1.000 & 1.000 & 0.987 & 1.000 & 0.993 \\
+ & ResNet50, same schedule as reference & 0.998 & 0.999 & 0.953 & 1.000 & 0.976 \\
+ & 4-block CNN trained from scratch & 0.991 & 0.997 & 0.950 & 0.974 & 0.962 \\
+ & DenseNet121, frozen backbone for all epochs (linear probe) & 0.990 & 0.996 & 0.950 & 0.945 & 0.947 \\
+\midrule
+Q2 imbalance & Unweighted BCE, inverse-frequency sampler & 1.000 & 1.000 & 0.976 & 1.000 & 0.988 \\
+ & Unweighted BCE, uniform sampling & 1.000 & 1.000 & 0.970 & 1.000 & 0.985 \\
+ & Focal loss with class weight alpha=0.26 on PNEUMONIA, uniform sampling & 0.999 & 1.000 & 0.950 & 1.000 & 0.975 \\
+ & BCE with pos\_weight = n\_neg/n\_pos, uniform sampling & 0.999 & 1.000 & 0.962 & 1.000 & 0.981 \\
+\midrule
+Q3 padding & Anisotropic resize to a square, no padding & 0.999 & 1.000 & 0.965 & 1.000 & 0.982 \\
+ & Constant (mean-intensity) padding instead of reflection & 0.999 & 1.000 & 0.971 & 1.000 & 0.986 \\
+\midrule
+Q4 learning rate & Backbone learning rates x5 & \textbf{1.000} & 1.000 & 0.988 & 1.000 & 0.994 \\
+ & Head learning rate /4 & 0.999 & 1.000 & 0.975 & 1.000 & 0.988 \\
+\bottomrule
+\end{tabular}

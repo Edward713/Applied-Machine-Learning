@@ -1,0 +1,67 @@
+# =============================================================================
+# Default configuration: the ONLY place where paths and hyperparameters live.
+# Every experiment in experiments.yaml overrides a subset of these keys.
+# =============================================================================
+
+paths:
+  data_dir: ./data/chest_xray          # must contain train/ and test/ (ChestXRay2017.zip extracted)
+  output_dir: ./runs                   # one sub-folder per experiment/seed
+  results_dir: ./results               # aggregated CSV, LaTeX tables, figures
+
+data:
+  img_size: 512
+  val_fraction: 0.2                    # patient-grouped, stratified
+  split_seed: 42                       # kept fixed across training seeds -> same validation set
+  group_by_patient: true               # false = original image-level split (for the leakage check)
+  drop_exact_duplicates: true          # SHA-256 of file bytes, keep first occurrence
+  pad_mode: reflect                    # reflect | constant | stretch
+  norm_mean: 0.482
+  norm_std: 0.236
+  num_workers: 2
+  batch_size: 16
+
+augmentation:
+  enabled: true
+  affine_p: 0.7
+  translate: 0.08
+  scale: [0.92, 1.08]
+  rotate: 5
+  brightness_contrast: 0.15
+  brightness_contrast_p: 0.5
+  clahe_p: 0.5
+
+imbalance:
+  sampler: sqrt                        # none | sqrt | inverse
+  sqrt_normal_factor: 0.85             # only used by the sqrt sampler (original setting)
+
+loss:
+  name: focal                          # bce | weighted_bce | focal
+  gamma: 2.0                           # focal only
+  alpha: null                          # focal only: null = no class weighting;
+                                       #   float a = weight a on PNEUMONIA, (1-a) on NORMAL
+  scale: 0.85                          # common multiplier of the original focal loss (no effect on ranking)
+
+model:
+  name: densenet121                    # densenet121 | resnet50 | resnet18 | simple_cnn
+  pretrained: true
+  dropout: 0.4
+
+optim:
+  epochs: 7
+  freeze_epochs: 3                     # epochs with frozen backbone (= epochs -> linear probe)
+  lr_early: 3.0e-6
+  lr_late: 7.0e-6
+  lr_head: 4.0e-4
+  weight_decay: 0.02
+  amp: true                            # mixed precision, only active on CUDA
+  selection_metric: val_auc            # val_auc | val_loss  (checkpoint selection)
+  early_stopping_patience: null        # null = train all epochs
+
+evaluation:
+  threshold_rule: min_sensitivity      # youden | min_sensitivity | fixed
+  min_sensitivity: 0.95                # used by min_sensitivity rule (chosen on VALIDATION only)
+  fixed_threshold: 0.5
+  bootstrap: 2000                      # resamples for test CIs
+
+seed: 42
+deterministic: true

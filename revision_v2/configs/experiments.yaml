@@ -1,0 +1,81 @@
+# =============================================================================
+# Experimental plan. Each entry overrides keys of default.yaml (dotted notation).
+# "group" is used to build one table per research question.
+# Selection rule (fixed BEFORE looking at test): best mean validation ROC-AUC.
+# =============================================================================
+
+common:                       # applied to every experiment (screening budget)
+  data.img_size: 384          # screening resolution; finalists are re-run at 512
+  optim.epochs: 8
+
+seeds_screening: [42]
+seeds_final: [42, 43, 44]
+
+experiments:
+
+  # --- Q0: reproduce the previous submission and measure leakage --------------
+  ref_image_split:
+    group: Q0 reference
+    description: Original configuration, image-level split (previous submission)
+    overrides: {data.group_by_patient: false, data.drop_exact_duplicates: false}
+  ref_patient_split:
+    group: Q0 reference
+    description: Original configuration, patient-grouped split
+    overrides: {}
+
+  # --- Q1: how much does transfer learning / fine-tuning add? -----------------
+  simple_cnn_scratch:
+    group: Q1 architecture
+    description: 4-block CNN trained from scratch
+    overrides: {model.name: simple_cnn, model.pretrained: false, optim.freeze_epochs: 0,
+                optim.lr_early: 1.0e-3, optim.lr_late: 1.0e-3, optim.lr_head: 1.0e-3}
+  densenet_linear_probe:
+    group: Q1 architecture
+    description: DenseNet121, frozen backbone for all epochs (linear probe)
+    overrides: {optim.freeze_epochs: 999}
+  densenet_full_ft:
+    group: Q1 architecture
+    description: DenseNet121, no frozen phase
+    overrides: {optim.freeze_epochs: 0}
+  resnet50_ft:
+    group: Q1 architecture
+    description: ResNet50, same schedule as reference
+    overrides: {model.name: resnet50}
+
+  # --- Q2: imbalance strategy (one mechanism at a time) -----------------------
+  bce_plain:
+    group: Q2 imbalance
+    description: Unweighted BCE, uniform sampling
+    overrides: {loss.name: bce, imbalance.sampler: none}
+  bce_posweight:
+    group: Q2 imbalance
+    description: BCE with pos_weight = n_neg/n_pos, uniform sampling
+    overrides: {loss.name: weighted_bce, imbalance.sampler: none}
+  bce_sampler:
+    group: Q2 imbalance
+    description: Unweighted BCE, inverse-frequency sampler
+    overrides: {loss.name: bce, imbalance.sampler: inverse}
+  focal_alpha:
+    group: Q2 imbalance
+    description: Focal loss with class weight alpha=0.26 on PNEUMONIA, uniform sampling
+    overrides: {loss.name: focal, loss.alpha: 0.26, imbalance.sampler: none}
+
+  # --- Q3: geometry / padding shortcut (motivated by EDA + Grad-CAM) ----------
+  pad_constant:
+    group: Q3 padding
+    description: Constant (mean-intensity) padding instead of reflection
+    overrides: {data.pad_mode: constant}
+  pad_stretch:
+    group: Q3 padding
+    description: Anisotropic resize to a square, no padding
+    overrides: {data.pad_mode: stretch}
+
+  # --- Q4: learning-rate sensitivity ------------------------------------------
+  lr_backbone_x5:
+    group: Q4 learning rate
+    description: Backbone learning rates x5
+    overrides: {optim.lr_early: 1.5e-5, optim.lr_late: 3.5e-5}
+  lr_head_div4:
+    group: Q4 learning rate
+    description: Head learning rate /4
+    overrides: {optim.lr_head: 1.0e-4}

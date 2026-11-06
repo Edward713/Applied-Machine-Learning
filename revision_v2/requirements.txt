@@ -1,0 +1,13 @@
+# Tested with Python 3.12. On Colab, torch/torchvision are pre-installed with CUDA:
+#   pip install -r requirements.txt   (torch lines are then already satisfied)
+torch>=2.3
+torchvision>=0.18
+albumentations==2.0.8
+opencv-python-headless>=4.9
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.4
+matplotlib>=3.8
+pillow>=10.0
+pyyaml>=6.0
+tqdm>=4.66
