@@ -1,11 +1,6 @@
-"""Aggregate saved runs into CSV, LaTeX tables, LaTeX macros and figures.
-
-    python summarize.py                     # screening + final + baselines, whatever exists
-
-Outputs in results/:  summary_screening.csv, summary_final.csv,
-tables/tab_screening.tex, tables/tab_final_test.tex, tables/tab_splits.tex,
-tables/macros.tex, figures/*.pdf|png
-Numbers in the report are \\input from these files -> no manual transcription.
+"""Aggregate saved runs into CSV
+screening + final + baselines, whatever exists
+Outputs in results/:  summary_screening.csv, summary_final.csv
 """
 from __future__ import annotations
 
@@ -86,8 +81,7 @@ def table_screening(s: pd.DataFrame, path: Path):
 
 
 def table_final(final: pd.DataFrame, base: pd.DataFrame, path: Path, geometry_preds: pd.DataFrame | None):
-    """Test-set results of finalists (mean +/- sd over seeds) and baselines, all at the
-    validation-selected threshold, plus paired bootstrap AUC difference vs geometry."""
+
     lines = [r"\begin{tabular}{lrrrrrr}", r"\toprule",
              r"Model & AUC [95\% CI] & AP & Sens. & Spec. & F1 & $\Delta$AUC vs geometry \\", r"\midrule"]
     for name, df in (("baselines", base), ("final", final)):
@@ -166,7 +160,7 @@ def main():
                        "FinalTestSens": f"{b.test_sens.mean():.3f}", "FinalTestSpec": f"{b.test_spec.mean():.3f}",
                        "FinalThreshold": f"{b.threshold.mean():.3f}", "FinalSeeds": str(len(b))})
 
-        # figures for the chosen model (first seed) + baselines
+        # figures for the chosen model
         d0 = Path(b.sort_values("seed").iloc[0].dir)
         hist = {best.description: [pd.read_csv(Path(x) / "history.csv") for x in b.dir]}
         ref = fin[fin.experiment == "ref_patient_split"]

@@ -1,16 +1,3 @@
-"""Run one or more experiments from configs/experiments.yaml.
-
-Examples
---------
-    python run_experiment.py --list
-    python run_experiment.py --baselines                      # classical baselines
-    python run_experiment.py --exp ref_patient_split bce_plain # screening, seeds from yaml
-    python run_experiment.py --all                             # whole screening grid
-    python run_experiment.py --exp pad_constant --stage final  # 512 px, 3 seeds
-
-Runs that already have a metrics.json are skipped, so an interrupted Colab session
-can simply be restarted.
-"""
 from __future__ import annotations
 
 import argparse
@@ -54,7 +41,7 @@ def run_one(exp: str, seed: int, stage: str, overrides: dict | None = None) -> d
     model = build_model(cfg)
     history = fit(model, loaders, cfg, device, run_dir)
 
-    # predictions of the selected checkpoint (test is touched only here, once)
+    # predictions of the selected checkpoint
     _, _, p_val, _ = predict(model, loaders["val"], device, cfg["optim"]["amp"])
     _, _, p_test, _ = predict(model, loaders["test"], device, cfg["optim"]["amp"])
     extra_info = {
